@@ -44,7 +44,6 @@ at Krajee JQuery plugins.
 - Change stars and caption on slide and drag for mobile/touch devices (new feature since v3.1.0).
 - Support for translations and locales.
 
-
 ### New features/changes since release v4.0.0
 
 - **BC Breaking Change**: The `symbol`, `glyphicon`, `ratingClass` properties have been removed. The functionality is replaced with the `theme` property (and can also be complemented or implemented separately using the `containerClass` property).
