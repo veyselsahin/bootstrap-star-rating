@@ -89,6 +89,9 @@ or add:
 
 to your composer.json file
 
+> NOTE: You can use the [sass branch](https://github.com/kartik-v/bootstrap-star-rating/tree/sass) for installation using `bootstrap-sass` dependency.
+The [master branch](https://github.com/kartik-v/bootstrap-star-rating/tree/master) can be used for installation using plain `bootstrap` dependency.
+
 ### Manual Install
 
 You can also manually install the plugin easily to your project. Just download the source [ZIP](https://github.com/kartik-v/bootstrap-star-rating/zipball/master) or [TAR ball](https://github.com/kartik-v/bootstrap-star-rating/tarball/master) and extract the plugin assets (css and js folders) into your project.
