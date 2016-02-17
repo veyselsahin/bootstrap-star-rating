@@ -15,11 +15,15 @@
     "keywords": [
         "bootstrap",
         "star",
-        "rating"
+        "rating",
+        "font",
+        "awesome",
+        "glyphicon",
+        "svg"
     ],
     "dependencies": {
         "jquery": ">= 1.9.0",
-        "bootstrap": "~3"
+        "bootstrap-sass": "~3"
     },
     "license": "BSD-3-Clause"
 }
