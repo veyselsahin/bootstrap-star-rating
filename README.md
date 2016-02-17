@@ -61,6 +61,7 @@ at Krajee JQuery plugins.
     - `<i class="glyphicon glyphicon-star-empty"></i>`
 - Exclusive support for SVG (and a prebuilt `krajee-svg` theme that contains two different ready to use SVG icons).
 - Ability to easily set the widget as a "display only" rating via `displayOnly` property.
+- New property `animate` to control animation of highlighted stars on hover or click.
 
 > NOTE: Refer [change log](https://github.com/kartik-v/bootstrap-star-rating/blob/master/CHANGE.md) for details on plugin enhancements, fixes, and changes.
 
