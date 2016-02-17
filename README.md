@@ -25,7 +25,7 @@ at Krajee JQuery plugins.
 - The plugin automatically converts an input to a star rating control if you set its `class = rating`. 
   All options to the input can be passed as HTML5 `data` attributes.
 - You can use the HTML 5 number input for polyfill and the plugin will automatically use the number attributes like `min`, `max`, and `step`.
-  However, number inputs have a problem with decimal values on the Chrome Browser. Read the Browser Support section below.
+  However, number inputs have a problem with decimal values on the Chrome Browser. Read the Browser Support section in the documentation.
 - Involves pure CSS3 styling of the stars. Say goodbye to image sprites or playing with image backgrounds. Offers clean scalable vector 
   icons for consistent display across devices. Optionally one can use the Unicode character set to override symbols.
 - Use any of your favorite font icon frameworks to render your star symbols (for example you can easily use the icons from the FontAwesome library).
