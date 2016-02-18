@@ -65,10 +65,6 @@ at Krajee JQuery plugins.
 
 > NOTE: Refer [change log](https://github.com/kartik-v/bootstrap-star-rating/blob/master/CHANGE.md) for details on plugin enhancements, fixes, and changes.
 
-## Documentation and Demo
-
-View the [plugin documentation](http://plugins.krajee.com/star-rating) and [plugin demos](http://plugins.krajee.com/star-rating/demo) at Krajee JQuery plugins. 
-
 ## Pre-requisites  
 
 1. [Bootstrap 3.x](http://getbootstrap.com/)
@@ -139,6 +135,10 @@ $("#input-id").rating({'size':'lg'});
 The `#input-id` is the identifier for the input on your page, which is hidden automatically by the plugin. 
 
 Alternatively, you can directly call the plugin options by setting data attributes to your input field.
+
+## Documentation and Demo
+
+View the [plugin documentation](http://plugins.krajee.com/star-rating) and [plugin demos](http://plugins.krajee.com/star-rating/demo) at Krajee JQuery plugins. 
 
 ## License
 
