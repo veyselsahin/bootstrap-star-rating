@@ -61,7 +61,7 @@
     Rating.prototype = {
         constructor: Rating,
         _parseAttr: function (vattr, options) {
-            var self = this, $el = self.$element, elType = $el.attr('type'), finalVal, val, chk;
+            var self = this, $el = self.$element, elType = $el.attr('type'), finalVal, val, chk, out;
             if (elType === 'range' || elType === 'number') {
                 val = options[vattr] || $el.data(vattr) || $el.attr(vattr);
                 switch (vattr) {
@@ -75,19 +75,17 @@
                         chk = DEFAULT_STEP;
                 }
                 finalVal = isEmpty(val) ? chk : val;
-                return parseFloat(finalVal);
+                out = parseFloat(finalVal);
+            } else {
+                out = parseFloat(options[vattr]);
             }
-            return parseFloat(options[vattr]);
+            return isNaN(out) ? chk : out;
         },
         setDefault: function (key, val) {
             var self = this;
             if (isEmpty(self[key])) {
                 self[key] = val;
             }
-        },
-        getPosition: function (e) {
-            var pageX = isEmpty(e.pageX) ? e.originalEvent.touches[0].pageX : e.pageX;
-            return pageX - this.$rating.offset().left;
         },
         listenClick: function (e, callback) {
             e.stopPropagation();
@@ -171,9 +169,85 @@
                 self.reset();
             }
         },
+        setTouch: function (e, flag) {
+            //noinspection JSUnresolvedVariable
+            var self = this, ev, touches, pos, out, caption, w, width, isTouchCapable = 'ontouchstart' in window ||
+                (window.DocumentTouch && document instanceof window.DocumentTouch);
+            if (!isTouchCapable || self.inactive) {
+                return;
+            }
+            ev = e.originalEvent;
+            //noinspection JSUnresolvedVariable
+            touches = !isEmpty(ev.touches) ? ev.touches : ev.changedTouches;
+            pos = self.getPosition(touches[0]);
+            if (flag) {
+                self.setStars(pos);
+                self.$element.trigger('change').trigger('rating.change', [self.$element.val(), self.getCaption()]);
+                self.starClicked = true;
+            } else {
+                out = self.calculate(pos);
+                caption = out.val <= self.clearValue ? self.fetchCaption(self.clearValue) : out.caption;
+                w = self.getWidthFromValue(self.clearValue);
+                width = out.val <= self.clearValue ? w + '%' : out.width;
+                self.setCaption(caption);
+                self.$filledStars.css('width', width);
+            }
+        },
         initTouch: function (e) {
             var self = this, flag = (e.type === "touchend");
             self.setTouch(e, flag);
+        },
+        initSlider: function (options) {
+            var self = this;
+            if (isEmpty(self.$element.val())) {
+                self.$element.val(0);
+            }
+            self.initialValue = self.$element.val();
+            self.setDefault('min', self._parseAttr('min', options));
+            self.setDefault('max', self._parseAttr('max', options));
+            self.setDefault('step', self._parseAttr('step', options));
+            if (isNaN(self.min) || isEmpty(self.min)) {
+                self.min = DEFAULT_MIN;
+            }
+            if (isNaN(self.max) || isEmpty(self.max)) {
+                self.max = DEFAULT_MAX;
+            }
+            if (isNaN(self.step) || isEmpty(self.step) || self.step === 0) {
+                self.step = DEFAULT_STEP;
+            }
+            self.diff = self.max - self.min;
+        },
+        initHighlight: function (v) {
+            var self = this, w, cap = self.getCaption();
+            if (!v) {
+                v = self.$element.val();
+            }
+            w = self.getWidthFromValue(v) + '%';
+            self.$filledStars.width(w);
+            self.cache = {caption: cap, width: w, val: v};
+        },
+        init: function (options) {
+            var self = this, $el = self.$element.addClass('hide');
+            self.options = options;
+            $.each(options, function (key, value) {
+                self[key] = value;
+            });
+            if (self.rtl || $el.attr('dir') === 'rtl') {
+                self.rtl = true;
+                $el.attr('dir', 'rtl');
+            }
+            self.starClicked = false;
+            self.clearClicked = false;
+            self.initSlider(options);
+            self.checkDisabled();
+            if (self.displayOnly) {
+                self.inactive = true;
+                self.showClear = false;
+                self.showCaption = false;
+            }
+            self.generateRating();
+            self.listen();
+            $el.removeClass('rating-loading');
         },
         listen: function () {
             var self = this, $form = self.$element.closest('form'), $rating = self.$rating, $clear = self.$clear;
@@ -203,78 +277,6 @@
             options = options || self.options || {};
             self.destroy();
             $el.rating(options);
-        },
-        setTouch: function (e, flag) {
-            //noinspection JSUnresolvedVariable
-            var self = this, ev, touches, pos, out, caption, w, width, isTouchCapable = 'ontouchstart' in window ||
-                (window.DocumentTouch && document instanceof window.DocumentTouch);
-            if (!isTouchCapable || self.inactive) {
-                return;
-            }
-            ev = e.originalEvent;
-            //noinspection JSUnresolvedVariable
-            touches = !isEmpty(ev.touches) ? ev.touches : ev.changedTouches;
-            pos = self.getPosition(touches[0]);
-            if (flag) {
-                self.setStars(pos);
-                self.$element.trigger('change').trigger('rating.change', [self.$element.val(), self.getCaption()]);
-                self.starClicked = true;
-            } else {
-                out = self.calculate(pos);
-                caption = out.val <= self.clearValue ? self.fetchCaption(self.clearValue) : out.caption;
-                w = self.getWidthFromValue(self.clearValue);
-                width = out.val <= self.clearValue ? w + '%' : out.width;
-                self.setCaption(caption);
-                self.$filledStars.css('width', width);
-            }
-        },
-        initSlider: function (options) {
-            var self = this;
-            if (isEmpty(self.$element.val())) {
-                self.$element.val(0);
-            }
-            self.initialValue = self.$element.val();
-            self.setDefault('min', self._parseAttr('min', options));
-            self.setDefault('max', self._parseAttr('max', options));
-            self.setDefault('step', self._parseAttr('step', options));
-            if (isNaN(self.min) || isEmpty(self.min)) {
-                self.min = DEFAULT_MIN;
-            }
-            if (isNaN(self.max) || isEmpty(self.max)) {
-                self.max = DEFAULT_MAX;
-            }
-            if (isNaN(self.step) || isEmpty(self.step) || self.step === 0) {
-                self.step = DEFAULT_STEP;
-            }
-            self.diff = self.max - self.min;
-        },
-        init: function (options) {
-            var self = this, $el = self.$element.addClass('hide');
-            self.options = options;
-            $.each(options, function (key, value) {
-                self[key] = value;
-            });
-            self.starClicked = false;
-            self.clearClicked = false;
-            self.initSlider(options);
-            self.checkDisabled();
-            if (self.displayOnly) {
-                self.inactive = true;
-                self.showClear = false;
-                self.showCaption = false;
-            }
-            self.generateRating();
-            self.listen();
-            $el.removeClass('rating-loading');
-        },
-        initHighlight: function (v) {
-            var self = this, w, cap = self.getCaption();
-            if (!v) {
-                v = self.$element.val();
-            }
-            w = self.getWidthFromValue(v) + '%';
-            self.$filledStars.width(w);
-            self.cache = {caption: cap, width: w, val: v};
         },
         getContainerCss: function () {
             var self = this;
@@ -307,10 +309,6 @@
                 self.$container.before(self.$element).remove();
             }
             $container = self.$container = $(document.createElement("div")).insertBefore($el);
-            if (self.rtl || $el.attr('dir') === 'rtl') {
-                self.rtl = true;
-                $el.attr('dir', 'rtl');
-            }
             addCss($container, self.getContainerCss());
             self.$rating = $rating = $(document.createElement("div")).attr('class', 'rating').appendTo($container)
                 .append(self.getStars('empty')).append(self.getStars('filled'));
@@ -325,6 +323,30 @@
                 self.$emptyStars.width(w);
             }
         },
+        getPosition: function (e) {
+            var pageX = isEmpty(e.pageX) ? e.originalEvent.touches[0].pageX : e.pageX;
+            return pageX - this.$rating.offset().left;
+        },
+        getValueFromPosition: function (pos) {
+            var self = this, precision = getDecimalPlaces(self.step), val, factor, maxWidth = self.$rating.width();
+            factor = (self.diff * pos) / (maxWidth * self.step);
+            factor = self.rtl ? Math.floor(factor) : Math.ceil(factor);
+            val = applyPrecision(parseFloat(self.min + factor * self.step), precision);
+            val = Math.max(Math.min(val, self.max), self.min);
+            return self.rtl ? (self.max - val) : val;
+        },
+        getWidthFromValue: function (val) {
+            var self = this, min = self.min, max = self.max, factor, $r = self.$emptyStars, w;
+            if (!val || val <= min || min === max) {
+                return 0;
+            }
+            w = $r.outerWidth();
+            factor = w ? $r.width() / w : 1;
+            if (val >= max) {
+                return 100;
+            }
+            return (val - min) * factor * 100 / (max - min);
+        },
         getStars: function (type) {
             var self = this, stars = '<span class="' + type + '-stars">', i;
             for (i = 1; i <= self.stars; i++) {
@@ -338,14 +360,14 @@
         renderClear: function () {
             var self = this, css, $clr = self.clearElement ? $(self.clearElement) : '';
             if (!self.showClear) {
-                return '';
+                return;
             }
             css = self.getClearClass();
             if ($clr.length) {
                 addCss($clr, css);
                 $clr.attr({"title": self.clearButtonTitle}).html(self.clearButton);
                 self.$clear = $clr;
-                return '';
+                return;
             }
             self.addContent('clear',
                 '<div class="' + css + '" title="' + self.clearButtonTitle + '">' + self.clearButton + '</div>');
@@ -403,29 +425,6 @@
             css = isEmpty(cssVal) ? self.clearCaptionClass : cssVal;
             caption = (val === self.clearValue) ? self.clearCaption : cap;
             return '<span class="' + css + '">' + caption + '</span>';
-        },
-        getWidthFromValue: function (val) {
-            var self = this, min = self.min, max = self.max, factor, $r = self.$emptyStars,
-                w1 = $r.outerWidth(), w2 = $r.width();
-            if (!val) {
-                val = 0;
-            }
-            if (val <= min || min === max) {
-                return 0;
-            }
-            factor = w1 ? w2 / w1 : 1;
-            if (val >= max) {
-                return 100;
-            }
-            return (val - min) * factor * 100 / (max - min);
-        },
-        getValueFromPosition: function (pos) {
-            var self = this, precision = getDecimalPlaces(self.step), val, factor, maxWidth = self.$rating.width();
-            factor = (self.diff * pos) / (maxWidth * self.step);
-            factor = self.rtl ? Math.floor(factor) : Math.ceil(factor);
-            val = applyPrecision(parseFloat(self.min + factor * self.step), precision);
-            val = Math.max(Math.min(val, self.max), self.min);
-            return self.rtl ? (self.max - val) : val;
         },
         toggleHover: function (out) {
             var self = this, w, width, caption;
